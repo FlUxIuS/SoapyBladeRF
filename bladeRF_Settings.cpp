@@ -80,8 +80,11 @@ bladeRF_SoapySDR::bladeRF_SoapySDR(const bladerf_devinfo &devinfo):
 
 bladeRF_SoapySDR::~bladeRF_SoapySDR(void)
 {
-    SoapySDR::logf(SOAPY_SDR_INFO, "bladerf_close()");
-    if (_dev != NULL) bladerf_close(_dev);
+    SoapySDR::logf(SOAPY_SDR_INFO, "bladerf_device_reset()");
+    if (_dev != NULL) {
+        bladerf_device_reset(_dev);
+        // bladerf_close(_dev);
+    }
 }
 
 /*******************************************************************
@@ -389,7 +392,11 @@ void bladeRF_SoapySDR::setGain(const int direction, const size_t channel, const 
 
 void bladeRF_SoapySDR::setGain(const int direction, const size_t channel, const std::string &name, const double value)
 {
-    int ret = bladerf_set_gain_stage(_dev, _toch(direction, channel), name.c_str(), bladerf_gain(std::round(value)));
+    float converted_value;
+    converted_value = value; // TODO: fix 
+    int ret = bladerf_set_gain(_dev, _toch(direction, channel), bladerf_gain(std::round(converted_value)));
+
+    //int ret = bladerf_set_gain_stage(_dev, _toch(direction, channel), name.c_str(), bladerf_gain(std::round(value)));
     if (ret != 0)
     {
         SoapySDR::logf(SOAPY_SDR_ERROR, "bladerf_set_gain_stage(%s, %f) returned %s", name.c_str(), value, _err2str(ret).c_str());
